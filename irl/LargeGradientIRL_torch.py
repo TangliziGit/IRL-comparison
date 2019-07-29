@@ -27,8 +27,6 @@ class LinearModel(nn.Module):
         self.linear = nn.Sequential(
             nn.Linear(size, 1 * size),
             nn.Tanh(),
-            nn.Linear(1 * size, 1),
-            nn.Tanh(),
         )
 
     def forward(self, input):
@@ -127,6 +125,7 @@ class LargeGradientIRL(object):
             self.model, n_actions, n_states, transitionProbability,
             featureFunction, discount
         )
+        print(self.model)
 
     def gradientIterationIRL(self, ground_r=None):
         optimizer = torch.optim.SGD(self.model.parameters(), lr=self.learning_rate)
@@ -140,15 +139,109 @@ class LargeGradientIRL(object):
             loss.backward()
             optimizer.step()
 
+            # print(self.model.linear[0].weight.grad.sum())
             if ground_r is not None:
                 pearson=np.corrcoef(ground_r, rewards)[0,1]
-                print(epoch, loss.data.numpy(), pearson)
+                print(epoch, "%.12f"%loss.data.numpy(), pearson)
                 results.append([rewards, pearson])
             else:
-                print(epoch, loss.data.numpy())
+                print(epoch, "%.12f"%loss.data.numpy())
                 results.append([loss, rewards])
 
             if loss < 1:
                 break
 
         return results
+
+if __name__=='__main__':
+    # all in (x, y)
+    world_size=(5, 5)
+    n_actions=4
+    n_states=world_size[0]*world_size[1]
+    starting_state = (0, 4)
+    ending_state = (4, 0)
+
+    gr=np.zeros(world_size)
+    gr = np.vstack([gr[:-1, :], np.ones((1, world_size[1]))])
+    gr = np.hstack([gr[:, :-1], np.ones((world_size[0], 1))])
+    gr=gr.reshape(n_states, )
+    print(gr)
+
+    expert_actions=[3,3,3,3 ,0,0,0]
+
+    # (dx, dy)
+    dir = [(0, -1), (0, 1), (-1, 0), (1, 0)]
+    def _transition_probability(state, action, next_state):
+        state = int_to_state(state)
+        next_state = int_to_state(next_state)
+        real_next_state=get_next_state(state, action)
+
+        if real_next_state[0]!=next_state[0] or real_next_state[1]!=next_state[1]:
+            return 0
+        return 1
+
+    def feature_function(state):
+        feature = np.zeros(n_states)
+        feature[state]=1
+        return np.array(feature).reshape((25, 1))
+
+    def int_to_state(state_int):
+        return (state_int // world_size[0], state_int%world_size[0])
+
+    def state_to_int(state):
+        return state[0]*world_size[0]+state[1]
+
+    def get_next_state(state, action):
+        dx, dy=dir[action]
+        next_state = [state[0]+dx, state[1]+dy]
+        next_state[0] = max(next_state[0], 0)
+        next_state[0] = min(next_state[0], world_size[0] - 1)
+        next_state[1] = max(next_state[1], 0)
+        next_state[1] = min(next_state[1], world_size[1] - 1)
+        return (next_state[0], next_state[1])
+
+    def get_reward(state):
+        if state[0]!=ending_state[0] or state[1]!=ending_state[1]:
+            return 0
+        return 1
+
+    def gen_trajectories(n_trajectories):
+        trajectories = []
+        while len(trajectories) < n_trajectories:
+            trajectory = []
+            state = starting_state
+
+            for action in expert_actions:
+                next_state = get_next_state(state, action)
+                reward = get_reward(next_state)
+                state_int = state_to_int(state)
+
+                trajectory.append((state_int, action, reward))
+                state = next_state
+            trajectories.append(trajectory)
+        return trajectories
+
+    def transitionProbability(state_int, action):
+        res = {}
+        state = int_to_state(state_int)
+        for i in range(n_actions):
+            next_state = get_next_state(state, i)
+            next_state_int = state_to_int(next_state)
+            if action == i:
+                res[next_state_int] = 1
+            else:
+                res[next_state_int] = 0
+        return res
+
+    trajectories=gen_trajectories(2)
+
+    irl=LargeGradientIRL(n_actions, n_states, transitionProbability,
+                 feature_function, 0.3, 0.01, trajectories, 8000)
+    result=irl.gradientIterationIRL()# gr)
+
+    import matplotlib.pyplot as plt
+    reward=result[-1][0].reshape(world_size)
+    print(reward)
+    plt.pcolor(reward)
+    plt.colorbar()
+    plt.show()

@@ -58,7 +58,7 @@ def train(discount, n_trajectories, epochs, learning_rate):
             return 1
         if action==do_nothing:
             # hard to get real probability, due to the simple states
-            return 0.5
+            return 1/n_sec_states
         return 0
 
     def transitionProbability(state_code, action):
