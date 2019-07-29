@@ -34,7 +34,7 @@ def train(discount, n_trajectories, epochs, learning_rate):
 
     r = maxent.irl(feature_matrix, env.n_actions, discount,
         env.transition_probability, trajectories, epochs, learning_rate,
-        "alpha_%d.pkl", "alpha_205.pkl", 205)
+        "alpha_%d.pkl", "alpha_210.pkl", 210)
 
     pkl.dump(r, open("maxent_reward.pkl", 'wb'))
 
