@@ -17,7 +17,11 @@ class LargeGradientIRL(object):
         self.trajectories=trajectories
         self.learning_rate=learning_rate
         self.epochs=epochs
-        self.approxStructure=[self.featureFunction(0).shape[0],100*self.featureFunction(0).shape[0],100*self.featureFunction(0).shape[0],10*self.featureFunction(0).shape[0],1]
+        self.approxStructure=[self.featureFunction(0).shape[0],
+                              100*self.featureFunction(0).shape[0],
+                              100*self.featureFunction(0).shape[0],
+                              10*self.featureFunction(0).shape[0],
+                              1]
 
     def gradientIterationIRL(self, ground_r=None):
         print("nn-based large scale gradient iteration irl")
