@@ -5,7 +5,7 @@ import numpy as np
 import pickle as pkl
 
 import irl.maxent as maxent
-from airplane import Env
+# from airplane import Env
 import irl.value_iteration as vi
 from irl.validate import validate
 
@@ -24,16 +24,24 @@ def train(discount, n_trajectories, epochs, learning_rate):
 
     # wind = 0.3
     trajectory_length = 268
+    n_actions=3
 
     # gw = gridworld.Gridworld(grid_size, wind, discount)
-    env = Env()
-    trajectories = env.generate_trajectories(n_trajectories,
-                                            trajectory_length,
-                                            env.optimal_policy_deterministic)
-    feature_matrix = env.feature_matrix()
+    # env = Env()
+    # trajectories = env.generate_trajectories(n_trajectories,
+    #                                         trajectory_length,
+    #                                         env.optimal_policy_deterministic)
+    # pkl.dump(trajectories, open('airplane_trajectories.pkl', 'wb'))
+    # pkl.dump(env.feature_matrix(), open('airplane_feature_matrix.pkl', 'wb'))
+    # pkl.dump(env.transition_probability, open('transition_probability.pkl', 'wb'))
+    #
+    # exit(0)
+    trajectories = pkl.load(open('airplane_trajectories.pkl', 'rb'))
+    feature_matrix = pkl.load(open('airplane_feature_matrix.pkl', 'rb'))
+    transition_probability=pkl.load(open('transition_probability.pkl', 'rb'))
 
-    r = maxent.irl(feature_matrix, env.n_actions, discount,
-        env.transition_probability, trajectories, epochs, learning_rate,
+    r = maxent.irl(feature_matrix, n_actions, discount,
+        transition_probability, trajectories, epochs, learning_rate,
         "alpha_%d.pkl", "alpha_209.pkl", 209)
 
     pkl.dump(r, open("maxent_reward.pkl", 'wb'))

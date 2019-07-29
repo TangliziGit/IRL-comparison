@@ -2,7 +2,7 @@ import numpy as np
 import pickle as pkl
 
 import irl.maxent as maxent
-import flappy.game.wrapped_flappy_bird as Game
+# import flappy.game.wrapped_flappy_bird as Game
 
 import irl.value_iteration as vi
 from irl.validate import validate
@@ -21,15 +21,20 @@ def train(discount, n_trajectories, epochs, learning_rate):
     """
 
     trajectory_length = 276
+    n_actions = 2
 
-    env = Game.GameState()
-    trajectories = env.generate_trajectories(n_trajectories,
-                                            trajectory_length,
-                                            env.optimal_policy_deterministic)
-    feature_matrix = env.feature_matrix()
 
-    r = maxent.irl(feature_matrix, env.n_actions, discount,
-        env.transition_probability, trajectories, epochs, learning_rate,
+    # env = Game.GameState()
+    # trajectories = env.generate_trajectories(n_trajectories,
+    #                                         trajectory_length,
+    #                                         env.optimal_policy_deterministic)
+    trajectories = pkl.load(open('lg_trajectories.pkl', 'rb'))
+    # feature_matrix = env.feature_matrix()
+    feature_matrix = pkl.load(open('flappy_feature_matrix.pkl', 'rb'))
+    transition_probability=pkl.load(open('flappy_transition_probability.pkl', 'rb'))
+
+    r = maxent.irl(feature_matrix, n_actions, discount,
+        transition_probability, trajectories, epochs, learning_rate,
         "flappy_alpha_%d.pkl", "flappy_alpha_99.pkl", 99)
 
     pkl.dump(r, open("flappy_maxent_reward.pkl", 'wb'))
