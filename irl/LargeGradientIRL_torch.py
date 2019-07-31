@@ -1,3 +1,4 @@
+import pickle as pkl
 import numpy as np
 from tqdm import tqdm
 
@@ -123,7 +124,7 @@ class LargeGradientIRL(object):
         )
         print(self.model)
 
-    def gradientIterationIRL(self, ground_r=None):
+    def gradientIterationIRL(self, ground_r=None, save_file_name=None):
         def show_grads(model):
             print("")
             for idx, layer in enumerate(model.linear):
@@ -150,6 +151,7 @@ class LargeGradientIRL(object):
             else:
                 print(epoch, "%.12f"%loss.data.numpy())
                 results.append([loss, rewards])
+            pkl.dump(results, open(save_file_name%(epoch), 'wb'))
 
             if loss < 1:
                 break

@@ -92,7 +92,7 @@ def train(discount, n_trajectories, epochs, learning_rate):
 
     irl = LargeGradientIRL(n_actions, n_states, transitionProbability,
                            feature_function, discount, learning_rate, trajectories, epochs)
-    result = irl.gradientIterationIRL()
+    result = irl.gradientIterationIRL(save_file_name="flappy_lg_results_%d.pkl")
 
     pkl.dump(result, open("lg_result.pkl", 'wb'))
 
