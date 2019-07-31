@@ -25,9 +25,7 @@ class LinearModel(nn.Module):
         #     nn.Tanh(),
         # )
         self.linear = nn.Sequential(
-            nn.Linear(size, 1 * size),
-            nn.ReLU(),
-            nn.Linear(size, 1 * size),
+            nn.Linear(size, 1),
             nn.ReLU(),
         )
 
@@ -67,7 +65,8 @@ class NegativeLogLikelihoodLossFunction(nn.Module):
         QValue_list=[]
         for j in range(self.n_actions):
             QValue_list.append(self.QValue(state, j))
-        self.V[state]=torch.max(torch.FloatTensor(QValue_list))
+        self.V[state]=torch.max( \
+            torch.FloatTensor(QValue_list))
         return self.V[state]
 
     def QValue(self, state, action):
@@ -138,7 +137,7 @@ class LargeGradientIRL(object):
         print("start learning")
         for epoch in range(self.epochs):
             loss=self.loss_func(self.trajectories)
-            rewards=None # self.loss_func.get_reward_list()
+            rewards=self.loss_func.get_reward_list()
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
@@ -232,9 +231,9 @@ if __name__=='__main__':
             next_state = get_next_state(state, i)
             next_state_int = state_to_int(next_state)
             if action == i:
-                res[next_state_int] = 0.1
+                res[next_state_int] = 1
             else:
-                res[next_state_int] = 0.1
+                res[next_state_int] = 0
         return res
 
     trajectories=gen_trajectories(2)
