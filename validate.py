@@ -204,10 +204,10 @@ get_reward = {
 
 result = {}
 
-
 def validate(env_name='airplane', algo_env_name='lg_airplane', result_filename="airplane_lg_result_%d.pkl"):
     env = env_class[env_name]()
-    expert_trajectory[env_name] = env.generate_trajectories(1, 270, env.optimal_policy_deterministic)[0]
+    if expert_trajectory[env_name] is None:
+        expert_trajectory[env_name] = env.generate_trajectories(1, n_tra[env_name], env.optimal_policy_deterministic)[0]
 
     result[algo_env_name] = []
     for i in range(n_iters[algo_env_name]):
