@@ -211,7 +211,7 @@ def validate(env_name='airplane', algo_env_name='lg_airplane', result_filename="
         reward = get_reward[algo_env_name](i)
         policy = find_policy(n_states[env_name], n_actions[env_name],
                              transition_probability[env_name], reward, 0.3, stochastic=False)
-        trajectory = env.generate_trajectories(1, n_tra[env], lambda s: policy[s])[0]
+        trajectory = env.generate_trajectories(1, n_tra[env_name], lambda s: policy[s])[0]
 
         error_time = 0
         live_time = len(trajectory)
