@@ -1,10 +1,7 @@
 import numpy as np
 import pickle as pkl
-import pandas as pd
-import matplotlib.pyplot as plt
 
 p = ''
-
 
 class FlappyUtils:
     do_jump = 0
@@ -238,11 +235,12 @@ def get_env_name(algo_env_name):
 
 
 if __name__=='__main__':
+    import sys
 
-    for algo_env_name in ['deep_maxent_airplane', 'deep_maxent_flappy',
-                          'maxent_airplane', 'maxent_flappy',
-                          'lg_airplane', 'lg_flappy',
-                         ]:
+    algo_env_name_list=['deep_maxent_airplane', 'deep_maxent_flappy',
+                        'maxent_airplane', 'maxent_flappy',
+                        'lg_airplane', 'lg_flappy',]
+    for algo_env_name in [algo_env_name_list[int(sys.argv[1])]]:
         print(algo_env_name)
         env_name=get_env_name(algo_env_name)
         validate(env_name, algo_env_name, result_filename=algo_env_name+"_result_%d_v.pkl")
