@@ -2,7 +2,7 @@ import numpy as np
 import pickle as pkl
 
 import irl.maxent as maxent
-# import flappy.game.wrapped_flappy_bird as Game
+import flappy.game.wrapped_flappy_bird as Game
 
 import irl.value_iteration as vi
 from irl.validate import validate
@@ -20,17 +20,18 @@ def train(discount, n_trajectories, epochs, learning_rate):
     learning_rate: Gradient descent learning rate. float.
     """
 
-    trajectory_length = 276
+    trajectory_length = 15
     n_actions = 2
-
 
     # env = Game.GameState()
     # trajectories = env.generate_trajectories(n_trajectories,
     #                                         trajectory_length,
     #                                         env.optimal_policy_deterministic)
-    trajectories = pkl.load(open('lg_trajectories.pkl', 'rb'))
+    # pkl.dump(trajectories, open('flappy_trajectories.pkl', 'wb'))
+    trajectories = pkl.load(open('flappy_trajectories.pkl', 'rb'))
     # feature_matrix = env.feature_matrix()
     feature_matrix = pkl.load(open('flappy_feature_matrix.pkl', 'rb'))
+    # transition_probability=env.transition_probability
     transition_probability=pkl.load(open('flappy_transition_probability.pkl', 'rb'))
 
     r = maxent.irl(feature_matrix, n_actions, discount,

@@ -100,7 +100,8 @@ class GameState:
         self.n_actions=2
 
         self.starting_state=(  1, 390)
-        self.ending_state=  (276, 485)
+        # self.ending_state=  (276, 485)
+        self.ending_state=(15, None)
 
         self.init_expert_action_frame()
 
@@ -149,19 +150,23 @@ class GameState:
             return 1
         if action==self.do_nothing:
             # hard to get real probability, due to the simple states
-            return 0.5
+            return 1/self.n_sec_states
         return 0
 
     def init_expert_action_frame(self):
         # self.expert_action = [self.do_nothing] + [int(x) for x in pkl.load(open("flappy_ops.pkl", "rb"))]
         self.expert_action = [int(x) for x in pkl.load(open("flappy_ops.pkl", "rb"))][1:]
-        self.init_expert()
+        self.init_expert(load=True)
         self.expert_action_frame = pd.DataFrame(columns=["action"])
-        self.origin_expert_states = [self.starting_state] + self.expert_states[:-1]
-        self.origin_expert_actions = [self.do_nothing] + self.expert_action
+        # self.origin_expert_states = [self.starting_state] + self.expert_states[:-1]
+        # self.origin_expert_actions = [self.do_nothing] + self.expert_action
+        self.origin_expert_states = self.expert_states[:-1]
+        self.origin_expert_actions = self.expert_action
+        pkl.dump(self.origin_expert_states, open("flappy_origin_expert_states.pkl", 'wb'))
+        pkl.dump(self.origin_expert_actions, open("flappy_origin_expert_actions.pkl", 'wb'))
 
         for state, action in zip(self.origin_expert_states, self.origin_expert_actions):
-            if state[0]==self.n_first_states-1:
+            if state[0]==self.n_first_states:
                 self.ending_state=state
                 break
             state_code = self._get_state_code_by_state(state)
@@ -223,7 +228,7 @@ class GameState:
     def optimal_policy_deterministic(self, state_code):
         # in ..._frame.index
         if state_code in self.expert_action_frame.index:
-            return self.expert_action_frame.loc[state_code].data[0]
+            return self.expert_action_frame.loc[state_code].to_numpy()[0]
         print("not exsits", state_code, self._get_state_by_state_code(state_code),
               '- real state:', self._get_state_by_state_code(state_code))
         return random.randint(0, self.n_actions - 1)
@@ -240,6 +245,7 @@ class GameState:
         trajectories = []
         for _ in range(n_trajectories):
             self.__init__() # ?
+            self.frame_step(self._get_real_action_by_action(self.do_nothing))
             sx, sy = self.starting_state
 
             trajectory = []
@@ -249,10 +255,12 @@ class GameState:
                 real_action = self._get_real_action_by_action(action)
 
                 img, next_state, terminal = self.frame_step(real_action)
+                next_state=(next_state[0], next_state[1]+380)
 
-                if terminal or next_state[0]==self.ending_state[0]:
+                if terminal or sx==self.ending_state[0]:
                     break
 
+                print(next_state, terminal)
                 state_int = self._get_state_code_by_state((sx, sy))
                 action_int = action
                 next_state_int = self._get_state_code_by_state(next_state)

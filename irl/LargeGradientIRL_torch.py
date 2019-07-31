@@ -26,7 +26,9 @@ class LinearModel(nn.Module):
         # )
         self.linear = nn.Sequential(
             nn.Linear(size, 1 * size),
-            nn.Tanh(),
+            nn.ReLU(),
+            nn.Linear(size, 1 * size),
+            nn.ReLU(),
         )
 
     def forward(self, input):
@@ -101,11 +103,6 @@ class NegativeLogLikelihoodLossFunction(nn.Module):
                 QValue_list = []
                 for j in range(self.n_actions):
                     QValue_list.append(self.QValue(s, j))
-                # QValue_list = QValue_list - QValue_list[a]
-                # QValue_list = tf.stack(QValue_list)
-                # Exp_QValue_list = tf.exp(QValue_list)
-                # Sum_QValue_list = tf.reduce_sum(Exp_QValue_list)
-                # negativeloglikelihood += tf.log(Sum_QValue_list)
                 QValue_list = [x - QValue_list[a] for x in QValue_list]
                 QValue_list = torch.stack(QValue_list)
                 Exp_QValue_list = torch.exp(QValue_list)
@@ -128,6 +125,13 @@ class LargeGradientIRL(object):
         print(self.model)
 
     def gradientIterationIRL(self, ground_r=None):
+        def show_grads(model):
+            print("")
+            for idx, layer in enumerate(model.linear):
+                if hasattr(layer, 'weight'):
+                    print("[%d] layer weight grad:"%idx, layer.weight.grad.sum())
+                    print("[%d] layer bias grad:"%idx, layer.bias.grad.sum())
+
         optimizer = torch.optim.SGD(self.model.parameters(), lr=self.learning_rate)
 
         results=[]
@@ -139,7 +143,7 @@ class LargeGradientIRL(object):
             loss.backward()
             optimizer.step()
 
-            # print(self.model.linear[0].weight.grad.sum())
+            show_grads(self.model)
             if ground_r is not None:
                 pearson=np.corrcoef(ground_r, rewards)[0,1]
                 print(epoch, "%.12f"%loss.data.numpy(), pearson)
@@ -228,12 +232,14 @@ if __name__=='__main__':
             next_state = get_next_state(state, i)
             next_state_int = state_to_int(next_state)
             if action == i:
-                res[next_state_int] = 1
+                res[next_state_int] = 0.1
             else:
-                res[next_state_int] = 0
+                res[next_state_int] = 0.1
         return res
 
     trajectories=gen_trajectories(2)
+    # print(trajectories[0])
+    # exit(0)
 
     irl=LargeGradientIRL(n_actions, n_states, transitionProbability,
                  feature_function, 0.3, 0.01, trajectories, 8000)

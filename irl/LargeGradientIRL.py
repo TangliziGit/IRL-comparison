@@ -18,9 +18,9 @@ class LargeGradientIRL(object):
         self.learning_rate=learning_rate
         self.epochs=epochs
         self.approxStructure=[self.featureFunction(0).shape[0],
-                              100*self.featureFunction(0).shape[0],
-                              100*self.featureFunction(0).shape[0],
-                              10*self.featureFunction(0).shape[0],
+                              1*self.featureFunction(0).shape[0],
+                              1*self.featureFunction(0).shape[0],
+                              1*self.featureFunction(0).shape[0],
                               1]
 
     def gradientIterationIRL(self, ground_r=None):
