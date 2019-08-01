@@ -201,13 +201,14 @@ get_reward = {
 
 result = {}
 
-def validate(env_name='airplane', algo_env_name='lg_airplane', result_filename="airplane_lg_result_%d.pkl"):
+def validate(env_name='airplane', algo_env_name='lg_airplane', start_iter=0,
+             result_filename="airplane_lg_result_%d.pkl"):
     env = env_class[env_name]()
     if expert_trajectory[env_name] is None:
         expert_trajectory[env_name] = env.generate_trajectories(1, n_tra[env_name], env.optimal_policy_deterministic)[0]
 
     result[algo_env_name] = []
-    for i in range(n_iters[algo_env_name]):
+    for i in range(start_iter, n_iters[algo_env_name]):
         reward = get_reward[algo_env_name](i)
         policy = find_policy(n_states[env_name], n_actions[env_name],
                              transition_probability[env_name], reward, 0.3, stochastic=False)
@@ -240,7 +241,11 @@ if __name__=='__main__':
     algo_env_name_list=['deep_maxent_airplane', 'deep_maxent_flappy',
                         'maxent_airplane', 'maxent_flappy',
                         'lg_airplane', 'lg_flappy',]
+
+    start_iter=0
+    if len(sys.argv)>=3:
+        start_iter=int(sys.argv[2])
     for algo_env_name in [algo_env_name_list[int(sys.argv[1])]]:
         print(algo_env_name)
         env_name=get_env_name(algo_env_name)
-        validate(env_name, algo_env_name, result_filename=algo_env_name+"_result_%d_v.pkl")
+        validate(env_name, algo_env_name, start_iter, result_filename=algo_env_name+"_result_%d_v.pkl")
