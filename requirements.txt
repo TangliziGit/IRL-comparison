@@ -2,7 +2,7 @@ tqdm==4.32.1
 torchvision==0.3.0
 Keras==2.2.4
 cvxopt==1.2.3
-tensorflow_gpu==1.12.2
+tensorflow_gpu==1.15.2
 torch==1.1.0
 Theano==1.0.4
 numpy==1.16.4
