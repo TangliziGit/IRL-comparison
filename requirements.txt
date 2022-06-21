@@ -5,7 +5,7 @@ cvxopt==1.2.3
 tensorflow_gpu==1.15.4
 torch==1.1.0
 Theano==1.0.4
-numpy==1.16.4
+numpy==1.22.0
 matplotlib==3.0.3
 pandas==0.24.2
 pygame==1.9.6
